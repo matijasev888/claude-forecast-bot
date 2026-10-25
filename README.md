@@ -6,7 +6,7 @@ A forecasting bot for the [Metaculus FutureEval bot tournament](https://www.meta
 
 For every new tournament question:
 
-1. **Research**: one Claude run (default `sonnet`) with web search and page fetching writes a dated research brief: resolution mechanics, current status, base rates, upcoming events, prediction-market and expert views, key uncertainties, sources.
+1. **Research**: open prediction markets matching the question's keywords are looked up on Manifold and Polymarket (public APIs; titles sanitized, low-volume markets skipped, passed to the models as fenced untrusted data). Then one Claude run (default `sonnet`) with web search and page fetching writes a dated research brief: resolution mechanics, current status, base rates, upcoming events, prediction-market and expert views, key uncertainties, sources.
 2. **Forecast**: several independent Claude runs (default `opus, opus, sonnet`) read the brief and return a structured forecast with a written rationale.
 3. **Combine**: binary forecasts are averaged in log-odds space and clipped to 1.5%–98.5%; multiple-choice probabilities are averaged with a small floor; numeric and date forecasts average 13 percentiles (p1–p99) and are turned into a full CDF with [`forecasting-tools`](https://github.com/Metaculus/forecasting-tools).
 4. **Publish**: the forecast and a private comment with the research and every rationale are posted through the Metaculus API.
