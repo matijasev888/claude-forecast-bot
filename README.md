@@ -15,7 +15,7 @@ The main tournament is prioritised over MiniBench, and soonest-closing questions
 
 ## Running it
 
-GitHub Actions runs `.github/workflows/forecast.yaml` every 20 minutes. It needs two repository secrets:
+GitHub Actions runs `.github/workflows/forecast.yaml` every 10 minutes (tournament questions are open for only 3 hours, and scheduled runs are sometimes skipped). It needs two repository secrets:
 
 | Secret | Where it comes from |
 |---|---|

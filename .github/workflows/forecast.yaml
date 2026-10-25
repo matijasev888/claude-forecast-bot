@@ -5,9 +5,11 @@ on:
     inputs:
       max_questions:
         description: "Maximum questions to forecast in this run"
-        default: "6"
+        default: "8"
   schedule:
-    - cron: "7,27,47 * * * *" # every 20 minutes; already-forecasted questions are skipped
+    # Tournament questions stay open for only 3 hours and GitHub sometimes skips scheduled runs,
+    # so check every 10 minutes; already-forecasted questions are skipped.
+    - cron: "3-59/10 * * * *"
 
 concurrency:
   group: forecast
@@ -34,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked --no-dev
       - name: Forecast
-        run: uv run --no-dev python main.py --mode tournament --max-questions "${{ inputs.max_questions || '6' }}"
+        run: uv run --no-dev python main.py --mode tournament --max-questions "${{ inputs.max_questions || '8' }}"
         env:
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
