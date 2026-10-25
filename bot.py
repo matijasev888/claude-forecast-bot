@@ -36,6 +36,7 @@ from forecasting_tools.data_models.multiple_choice_report import PredictedOption
 
 import claude_cli
 import prompts
+import signals
 
 logger = logging.getLogger(__name__)
 
@@ -151,8 +152,18 @@ class ClaudeForecaster(ForecastBot):
                 + "\n\nThis question is conditional on the following related question; research both.\n\n"
                 + prompts.question_block(question.parent)
             )
+            title = question.child.question_text
         else:
             prompt = prompts.research_prompt(question)
+            title = question.question_text
+
+        markets = ""
+        try:
+            markets = await signals.market_context(title)
+        except Exception as error:  # market data is a bonus; never block research on it
+            logger.info(f"Market lookup skipped: {type(error).__name__}: {error}")
+        if markets:
+            prompt += f"\n\n# Prediction-market search results\n{markets}\n"
 
         result = await self._call_with_fallback(
             prompt,
@@ -168,6 +179,9 @@ class ClaudeForecaster(ForecastBot):
         logger.info(
             f"Research for {question.page_url}: {len(research)} chars, {result.web_searches} web searches"
         )
+        if markets:
+            # Forecasters also see the raw prices, in case the brief summarised them away.
+            research += f"\n\n## Raw prediction-market search results\n{markets}"
         return research
 
     async def summarize_research(self, question: MetaculusQuestion, research: str) -> str:

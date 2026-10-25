@@ -130,6 +130,25 @@ def test_parse_cli_json_tolerates_leading_noise():
     assert claude_cli._parse_cli_json("warning line\n" + json.dumps(payload)) == payload
 
 
+def test_search_keywords_drop_stopwords_dates_and_small_numbers():
+    import signals
+
+    keywords = signals.search_keywords("Will the Federal Reserve cut rates at its December 2026 meeting before January 15?")
+    assert keywords == "Federal Reserve cut rates meeting"
+
+
+def test_market_context_survives_api_failures(monkeypatch):
+    import signals
+
+    def boom(query):
+        raise OSError("network down")
+
+    monkeypatch.setattr(signals, "manifold_lines", boom)
+    monkeypatch.setattr(signals, "polymarket_lines", lambda query: ["- [Polymarket, real money] \"Q\": Yes: 40%"])
+    context = asyncio.run(signals.market_context("Will something notable happen?"))
+    assert "Polymarket" in context and "Manifold" not in context.split("\n", 1)[1]
+
+
 def test_usage_limit_short_circuits(monkeypatch):
     monkeypatch.setattr(claude_cli, "usage_limit_hit", True)
     with pytest.raises(claude_cli.ClaudeUsageLimitError):

@@ -24,7 +24,7 @@ Your brief must cover:
 2. Current status: the latest relevant facts and data, each with its date.
 3. Base rates: reference classes, historical frequencies, typical timelines.
 4. What is scheduled between now and the resolution date (votes, releases, deadlines, meetings).
-5. Markets and expert views: prices or forecasts on the same or closely related questions (Polymarket, Kalshi, Manifold, Metaculus, official forecasts, analyst consensus), with dates.
+5. Markets and expert views: prices or forecasts on the same or closely related questions (Polymarket, Kalshi, Manifold, Metaculus, official forecasts, analyst consensus), with dates. If the prompt includes prediction-market search results, report only the markets that ask about the same event, threshold and time frame (say how each differs, if at all), and ignore the rest.
 6. For numeric or date questions: the latest values, recent trend, volatility, and any consensus estimates.
 7. Whether the outcome already looks determined (the event already happened, or has become impossible).
 
