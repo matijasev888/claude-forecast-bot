@@ -53,6 +53,7 @@ def _percent(probability: float) -> str:
 
 class ClaudeForecaster(ForecastBot):
     research_model = os.getenv("RESEARCH_MODEL", "sonnet")
+    research_effort = os.getenv("RESEARCH_EFFORT", "high") or None
     fallback_model = os.getenv("FALLBACK_MODEL", "opus")
     forecast_models = _env_list("FORECAST_MODELS", "opus,opus,sonnet")
     forecast_effort = os.getenv("FORECAST_EFFORT", "high") or None
@@ -158,6 +159,7 @@ class ClaudeForecaster(ForecastBot):
             model=self.research_model,
             system_prompt=prompts.RESEARCH_SYSTEM_PROMPT,
             tools=("WebSearch", "WebFetch"),
+            effort=self.research_effort,
             timeout_seconds=self.research_timeout,
         )
         research = result.text.strip()
