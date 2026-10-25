@@ -102,6 +102,9 @@ def main() -> int:
     parser.add_argument("--concurrency", type=int, default=int(os.getenv("QUESTION_CONCURRENCY", "2")))
     parser.add_argument("--no-minibench", action="store_true", help="Skip MiniBench in tournament mode")
     parser.add_argument("--reports-dir", default=os.getenv("REPORTS_DIR", "reports"))
+    parser.add_argument(
+        "--check-only", action="store_true", help="Only count questions to forecast (writes count to GITHUB_OUTPUT)"
+    )
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -126,6 +129,14 @@ def main() -> int:
     questions = collect_questions(client, sources, include_forecasted)
     if args.max_questions >= 0:
         questions = questions[: args.max_questions]
+
+    if args.check_only:
+        print(f"Questions to forecast: {len(questions)}")
+        output_path = os.getenv("GITHUB_OUTPUT")
+        if output_path:
+            with open(output_path, "a", encoding="utf-8") as handle:
+                handle.write(f"count={len(questions)}\n")
+        return 0
 
     published = not args.dry_run
     hide_values = args.mode == "tournament" and os.getenv("HIDE_FORECAST_VALUES", "").lower() in {"1", "true", "yes"}

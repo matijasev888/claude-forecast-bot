@@ -9,7 +9,7 @@ on:
   schedule:
     # Tournament questions stay open for only 3 hours and GitHub sometimes skips scheduled runs,
     # so check every 10 minutes; already-forecasted questions are skipped.
-    - cron: "3-59/10 * * * *"
+    - cron: "4,14,24,34,44,54 * * * *"
 
 concurrency:
   group: forecast
@@ -22,26 +22,33 @@ jobs:
   forecast:
     runs-on: ubuntu-latest
     timeout-minutes: 150
+    env:
+      METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
+      SKIP_MINIBENCH: ${{ vars.SKIP_MINIBENCH || '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v10.3.0
         with:
           version: "0.13.1"
           enable-cache: true
+      - name: Install dependencies
+        run: uv sync --locked --no-dev
+      - name: Check for new questions
+        id: check
+        run: uv run --no-dev python main.py --mode tournament --check-only --max-questions "${{ inputs.max_questions || '8' }}"
       - uses: actions/setup-node@v4
+        if: steps.check.outputs.count != '0'
         with:
           node-version: "22"
       - name: Install Claude Code
+        if: steps.check.outputs.count != '0'
         run: npm install -g @anthropic-ai/claude-code@2.1.310
-      - name: Install dependencies
-        run: uv sync --locked --no-dev
       - name: Forecast
+        if: steps.check.outputs.count != '0'
         run: uv run --no-dev python main.py --mode tournament --max-questions "${{ inputs.max_questions || '8' }}"
         env:
-          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           DISABLE_AUTOUPDATER: "1"
           HIDE_FORECAST_VALUES: "1"
           RESEARCH_MODEL: ${{ vars.RESEARCH_MODEL || 'sonnet' }}
           FORECAST_MODELS: ${{ vars.FORECAST_MODELS || 'opus,opus,sonnet' }}
-          SKIP_MINIBENCH: ${{ vars.SKIP_MINIBENCH || '' }}
