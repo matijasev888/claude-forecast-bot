@@ -1,0 +1,47 @@
+name: Test bot on the bot-testing-area
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Forecast without publishing"
+        type: boolean
+        default: true
+      max_questions:
+        description: "Maximum questions to forecast"
+        default: "3"
+
+concurrency:
+  group: test-bot
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          version: "0.13.1"
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code@2.1.310
+      - name: Install dependencies
+        run: uv sync --locked
+      - name: Unit tests
+        run: uv run pytest -q
+      - name: Forecast on bot-testing-area
+        run: uv run python main.py --mode test --max-questions "${{ inputs.max_questions }}" ${{ inputs.dry_run && '--dry-run' || '' }}
+        env:
+          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          DISABLE_AUTOUPDATER: "1"
+          RESEARCH_MODEL: ${{ vars.RESEARCH_MODEL || 'sonnet' }}
+          FORECAST_MODELS: ${{ vars.FORECAST_MODELS || 'opus,opus,sonnet' }}

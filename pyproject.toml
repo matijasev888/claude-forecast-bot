@@ -1,0 +1,24 @@
+[project]
+name = "claude-forecast-bot"
+version = "0.1.0"
+description = "Metaculus FutureEval forecasting bot powered by Claude Code (research + ensemble forecasts)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "forecasting-tools>=0.2.90,<0.4.0",
+    "python-dotenv>=1.0.1,<2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3,<10",
+]
+
+[tool.uv]
+# Only install package versions that have been public for a week (supply-chain hygiene),
+# except forecasting-tools, which Metaculus updates when tournament IDs rotate.
+exclude-newer = "7 days"
+exclude-newer-package = { forecasting-tools = false }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
