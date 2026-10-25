@@ -167,7 +167,8 @@ async def run_claude(
         try:
             structured = json.loads(result_text)
         except json.JSONDecodeError:
-            raise ClaudeCliError(f"claude ({model}) gave no structured output: {result_text[:300]!r}")
+            # Model output stays out of exception text: run logs of a public repo are public.
+            raise ClaudeCliError(f"claude ({model}) gave no structured output ({len(result_text)} chars of text)")
 
     model_usage = data.get("modelUsage") or {}
     web_searches = sum(int(entry.get("webSearchRequests") or 0) for entry in model_usage.values())

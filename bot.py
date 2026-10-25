@@ -162,7 +162,7 @@ class ClaudeForecaster(ForecastBot):
         )
         research = result.text.strip()
         if len(research) < 200:
-            raise claude_cli.ClaudeCliError(f"Research came back too short: {research!r}")
+            raise claude_cli.ClaudeCliError(f"Research came back too short ({len(research)} chars)")
         logger.info(
             f"Research for {question.page_url}: {len(research)} chars, {result.web_searches} web searches"
         )
